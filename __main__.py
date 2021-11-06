@@ -3,6 +3,7 @@ import os
 import signal
 import subprocess
 from textwrap import indent
+from typing import List
 
 
 def signal_handler(*_):
@@ -10,7 +11,7 @@ def signal_handler(*_):
     os._exit(0)
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-w",
@@ -30,7 +31,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main(args):
+def main(args: argparse.Namespace):
     # Handle Ctrl+C and other termination signals from the OS
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
@@ -44,24 +45,24 @@ def main(args):
         else:
             setup = "fn main() {{\n{}\n}}"
 
-        stdin = []
+        stdin: List[str] = []
 
         # Keep accepting input until
         # A blank line is received.
         while (_input := input(">>> " if not stdin else "... ")) != "":
             stdin.append(_input)
 
-        stdin = "\n".join(stdin)
+        parsed_stdin = "\n".join(stdin)
         # Rust is whitespace-insensitive but if
         # The user wants to preserve the code then
         # They will probably want it to look pretty.
         # There's not much overhead to indent the code anyways.
-        code = setup.format(indent(stdin, (" " * 4)))
+        code = setup.format(indent(parsed_stdin, (" " * 4)))
 
-        # Really no reason for this.
         if args.preserve_file:
             file = args.preserve_file
         else:
+            # Really no reason for this.
             file = f"{os.urandom(8).hex()}.rs"
 
         with open(file, "w") as fp:
