@@ -69,19 +69,13 @@ def main(args):
 
         proc = subprocess.run(f"rustc -o {file}.bin {file}", shell=True)
 
-        try:
-            if args.preserve_file is False:
-                os.remove(file)
-        except FileNotFoundError:
-            pass  # ???
-
-        if proc.returncode != 0:
-            continue
-        else:
+        if proc.returncode == 0:
             cwd = os.getcwd()
             subprocess.Popen(f"{cwd}/{file}.bin").wait()
 
         try:
+            if args.preserve_file is False:
+                os.remove(file)
             os.remove(f"{file}.bin")
             os.remove(f"{file}.pdb")
         except FileNotFoundError:
