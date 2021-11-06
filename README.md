@@ -11,7 +11,7 @@ Instead the program will read chunks of code until an empty line is sent, then e
 
 ## Example
 ```rust
->>> fn factorial(: u64) -> u64 {
+>>> fn factorial(n: u64) -> u64 {
 ...     match n {
 ...         0 | 1 => 1,
 ...         _ => factorial(n - 1) * n,
