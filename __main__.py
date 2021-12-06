@@ -2,13 +2,14 @@ import argparse
 import os
 import signal
 import subprocess
+from sys import exit
 from textwrap import indent
 from typing import List
 
 
 def signal_handler(*_):
     print("\n")
-    os._exit(0)
+    exit(0)
 
 
 def parse_args() -> argparse.Namespace:
@@ -32,11 +33,11 @@ def parse_args() -> argparse.Namespace:
 
 
 def main(args: argparse.Namespace):
-    # Handle Ctrl+C and other termination signals from the OS
+    # Handle Ctrl+C and other termination signals from OS
     signal.signal(signal.SIGINT, signal_handler)
     signal.signal(signal.SIGTERM, signal_handler)
 
-    print("--Rust REPL--", end=("\n" * 3))
+    print("--Rust REPL--", end=("\n" * 2))
 
     while True:
         # Double curly brackets make one literal.
@@ -49,14 +50,17 @@ def main(args: argparse.Namespace):
 
         # Keep accepting input until
         # A blank line is received.
-        while (_input := input(">>> " if not stdin else "... ")) != "":
+        while (_input := input("\n>>> " if not stdin else "... ")) != "":
+            if _input == "exit":
+                exit(0)
+
             stdin.append(_input)
 
         parsed_stdin = "\n".join(stdin)
         # Rust is whitespace-insensitive but if
         # The user wants to preserve the code then
         # They will probably want it to look pretty.
-        # There's not much overhead to indent the code anyways.
+        # There's not really any overhead to indent the code anyways.
         code = setup.format(indent(parsed_stdin, (" " * 4)))
 
         if args.preserve_file:
@@ -68,7 +72,7 @@ def main(args: argparse.Namespace):
         with open(file, "w") as fp:
             fp.write(code)
 
-        proc = subprocess.run(f"rustc -o {file}.bin {file}", shell=True)
+        proc = subprocess.run(f"rustc -o {file}.bin {file}")
 
         if proc.returncode == 0:
             cwd = os.getcwd()
@@ -77,7 +81,7 @@ def main(args: argparse.Namespace):
         try:
             if args.preserve_file is False:
                 os.remove(file)
-            os.remove(f"{file}.bin")
+                os.remove(f"{file}.bin")
             os.remove(f"{file}.pdb")
         except FileNotFoundError:
             continue
