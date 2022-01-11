@@ -72,7 +72,7 @@ def main(args: argparse.Namespace):
         with open(file, "w") as fp:
             fp.write(code)
 
-        proc = subprocess.run(f"rustc -o {file}.bin {file}")
+        proc = subprocess.run(f"rustc -o {file}.bin {file}", shell=True)
 
         if proc.returncode == 0:
             cwd = os.getcwd()
